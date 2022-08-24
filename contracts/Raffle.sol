@@ -6,6 +6,7 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 
+error Raffle__OnlyForEOA();
 error Raffle__NotEnoughETHEntered();
 error Raffle_transferFailed();
 error Raffle__NotOpen();
@@ -69,9 +70,14 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 	}
 
 	function enterRaffle() external payable {
-		// TODO check is player a contract???
 		if (s_raffleState != RaffleState.OPEN) revert Raffle__NotOpen();
 		if (msg.value < i_entranceFee) revert Raffle__NotEnoughETHEntered();
+
+		/**
+		 * If msg.sender is contract, there may be a denial of service attack.
+		 * When the contract cannot accept ETH (Because they doesn't have receive or fallback functions).
+		 */
+		if (msg.sender.code.length > 0) revert Raffle__OnlyForEOA();
 		s_players.push(payable(msg.sender));
 
 		emit RuffleEnter(msg.sender);

@@ -1,5 +1,6 @@
 import "dotenv/config";
 import "hardhat-gas-reporter";
+import "hardhat-deploy";
 import "@nomicfoundation/hardhat-toolbox";
 import { HardhatUserConfig } from "hardhat/config";
 
@@ -31,6 +32,11 @@ const config: HardhatUserConfig = {
 		currency: "USD",
 		outputFile: "gasReport.txt",
 		noColors: true,
+	},
+
+	namedAccounts: {
+		deployer: { default: 0 },
+		player: { default: 1 },
 	},
 };
 
