@@ -61,10 +61,10 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 		uint256 interval
 	) VRFConsumerBaseV2(vrfCoordinatorV2) {
 		i_vrfCoordinator = VRFCoordinatorV2Interface(vrfCoordinatorV2);
-		i_gasLane = gasLine;
-		i_interval = interval;
 		i_subId = subId;
+		i_gasLane = gasLine;
 		i_entranceFee = entranceFee;
+		i_interval = interval;
 		i_callbackGasLimit = callbackGasLimit;
 		s_lastTimeStamp = uint64(block.timestamp);
 	}
