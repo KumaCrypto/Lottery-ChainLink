@@ -18,13 +18,14 @@ const deployRaffle: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 	const currentChainId: number = network.config.chainId!;
 	const isDevChain: boolean = currentChainId === data.DEV_CHAIN_ID;
 
-	let vrfCoordinatorAddress: string, subId: string;
+	let vrfCoordinatorV2Mock: VRFCoordinatorV2Mock,
+		vrfCoordinatorAddress: string,
+		subId: string;
 
 	if (isDevChain) {
-		const vrfCoordinatorV2Mock: VRFCoordinatorV2Mock =
-			(await ethers.getContract(
-				"VRFCoordinatorV2Mock"
-			)) as unknown as VRFCoordinatorV2Mock;
+		vrfCoordinatorV2Mock = (await ethers.getContract(
+			"VRFCoordinatorV2Mock"
+		)) as unknown as VRFCoordinatorV2Mock;
 
 		vrfCoordinatorAddress = vrfCoordinatorV2Mock.address;
 
@@ -68,6 +69,10 @@ const deployRaffle: DeployFunction = async (hre: HardhatRuntimeEnvironment) => {
 			: data.CONFIRMATION_AMOUNT,
 		log: true,
 	})) as unknown as Raffle;
+
+	if (isDevChain) {
+		await vrfCoordinatorV2Mock!.addConsumer(subId, raffle.address);
+	}
 
 	if (!isDevChain && process.env.ETHERSCAN_API_KEY) {
 		log("Verifying...");
