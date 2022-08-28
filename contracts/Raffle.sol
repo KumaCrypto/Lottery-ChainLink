@@ -6,7 +6,6 @@ import "@chainlink/contracts/src/v0.8/VRFConsumerBaseV2.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/KeeperCompatibleInterface.sol";
 import "@chainlink/contracts/src/v0.8/interfaces/VRFCoordinatorV2Interface.sol";
 
-error Raffle__OnlyForEOA();
 error Raffle__NotEnoughETHEntered();
 error Raffle_transferFailed();
 error Raffle__NotOpen();
@@ -15,6 +14,7 @@ error Raffle__UpkeepNotNeeded(
 	uint256 numPlayers,
 	uint256 raffleState
 );
+error Raffle__YouDoesNotHaveFundsToWithdraw();
 
 /**
  * @title  A sample raffle contract.
@@ -44,12 +44,15 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 	address private s_recentWinner;
 	uint64 private s_lastTimeStamp;
 	RaffleState private s_raffleState;
+	uint256 private s_fundsToWithdraw;
+
 	address payable[] private s_players;
+	mapping(address => uint256) private s_userWithdrawAmount;
 
 	/* Events */
 	event RuffleEnter(address indexed player);
-	event WinnerPicked(address indexed winner);
-	event RuffleWinnerRequested(uint256 indexed requestId);
+	event WinnerPicked(address indexed winner, uint256 amount);
+	event WinningFundsWithdrawal(address indexed winner, uint256 amount);
 
 	/* Functions */
 	constructor(
@@ -73,11 +76,6 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 		if (s_raffleState != RaffleState.OPEN) revert Raffle__NotOpen();
 		if (msg.value < i_entranceFee) revert Raffle__NotEnoughETHEntered();
 
-		/**
-		 * If msg.sender is contract, there may be a denial of service attack.
-		 * When the contract cannot accept ETH (Because they doesn't have receive or fallback functions).
-		 */
-		if (msg.sender.code.length > 0) revert Raffle__OnlyForEOA();
 		s_players.push(payable(msg.sender));
 
 		emit RuffleEnter(msg.sender);
@@ -141,8 +139,6 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 			i_callbackGasLimit,
 			NUM_WORDS
 		);
-
-		emit RuffleWinnerRequested(requestId);
 	}
 
 	/**
@@ -155,19 +151,36 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 	) internal override {
 		/* Calculate a winner */
 		uint256 indexOfWinner = randomWords[0] % s_players.length;
-		address payable currentWinner = s_players[indexOfWinner];
+		address currentWinner = s_players[indexOfWinner];
 		s_recentWinner = currentWinner;
+
+		uint256 winnersPrize = address(this).balance - s_fundsToWithdraw;
+
+		s_userWithdrawAmount[currentWinner] =
+			s_userWithdrawAmount[currentWinner] +
+			winnersPrize;
+
+		s_fundsToWithdraw = s_fundsToWithdraw + winnersPrize;
 
 		/* Reset state for new lottery */
 		s_players = new address payable[](0);
 		s_raffleState = RaffleState.OPEN;
 		s_lastTimeStamp = uint64(block.timestamp);
 
-		(bool isSeccessed, ) = currentWinner.call{value: address(this).balance}(
-			""
-		);
+		emit WinnerPicked(currentWinner, winnersPrize);
+	}
+
+	function withdrawWinningFunds() external {
+		uint256 amount = s_userWithdrawAmount[msg.sender];
+		if (amount == 0) revert Raffle__YouDoesNotHaveFundsToWithdraw();
+
+		delete s_userWithdrawAmount[msg.sender];
+		s_fundsToWithdraw = s_fundsToWithdraw - amount;
+
+		(bool isSeccessed, ) = payable(msg.sender).call{value: amount}("");
 		if (!isSeccessed) revert Raffle_transferFailed();
-		emit WinnerPicked(currentWinner);
+
+		emit WinningFundsWithdrawal(msg.sender, amount);
 	}
 
 	/* Getter functions */
@@ -205,5 +218,9 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 
 	function getInterval() external view returns (uint256) {
 		return i_interval;
+	}
+
+	function getWinningFunds(address player) external view returns (uint256) {
+		return s_userWithdrawAmount[player];
 	}
 }
