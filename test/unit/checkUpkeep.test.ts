@@ -1,50 +1,54 @@
 import { loadFixture } from "@nomicfoundation/hardhat-network-helpers";
+import { network } from "hardhat";
 import { expect } from "chai";
 
 import { networkConfig } from "../../utils.data";
-import increaseTime from "./utilsForTest";
-import { defaultFixture } from "./fixture";
+import increaseTime from "../utils/utilsForTest";
+import { defaultFixture } from "../utils/fixture";
+import { DEV_CHAIN_ID } from "../../utils.data";
 
-describe("CheckUpkeep", function () {
-	const interval = networkConfig[31337].interval;
-	const entranceFee = networkConfig[31337].entranceFee;
+!(DEV_CHAIN_ID === network.config.chainId)
+	? describe.skip
+	: describe("CheckUpkeep", function () {
+			const interval = networkConfig[DEV_CHAIN_ID].interval;
+			const entranceFee = networkConfig[DEV_CHAIN_ID].entranceFee;
 
-	it("Should return false if balance and player list is empty", async function () {
-		const { raffle } = await loadFixture(defaultFixture);
-		await increaseTime(parseInt(interval));
+			it("Should return false if balance and player list is empty", async function () {
+				const { raffle } = await loadFixture(defaultFixture);
+				await increaseTime(parseInt(interval));
 
-		const isUpkeepNeeded = (await raffle.checkUpkeep([]))[0];
-		expect(isUpkeepNeeded).to.false;
-	});
+				const isUpkeepNeeded = (await raffle.checkUpkeep([]))[0];
+				expect(isUpkeepNeeded).to.false;
+			});
 
-	it("Shoulds return false if raffle status is not open", async function () {
-		const { raffle } = await loadFixture(defaultFixture);
+			it("Shoulds return false if raffle status is not open", async function () {
+				const { raffle } = await loadFixture(defaultFixture);
 
-		await raffle.enterRaffle({ value: entranceFee });
-		await increaseTime(+interval + 1);
+				await raffle.enterRaffle({ value: entranceFee });
+				await increaseTime(+interval + 1);
 
-		await raffle.performUpkeep([]);
+				await raffle.performUpkeep([]);
 
-		const isUpkeepNeeded = (await raffle.checkUpkeep([]))[0];
-		expect(isUpkeepNeeded).to.false;
-	});
+				const isUpkeepNeeded = (await raffle.checkUpkeep([]))[0];
+				expect(isUpkeepNeeded).to.false;
+			});
 
-	it("Returns false if enougth time is not passed", async function () {
-		const { raffle } = await loadFixture(defaultFixture);
+			it("Returns false if enougth time is not passed", async function () {
+				const { raffle } = await loadFixture(defaultFixture);
 
-		await raffle.enterRaffle({ value: entranceFee });
-		const isUpkeepNeeded = (await raffle.checkUpkeep([]))[0];
+				await raffle.enterRaffle({ value: entranceFee });
+				const isUpkeepNeeded = (await raffle.checkUpkeep([]))[0];
 
-		expect(isUpkeepNeeded).to.false;
-	});
+				expect(isUpkeepNeeded).to.false;
+			});
 
-	it("Returns true if all condition are met", async function () {
-		const { raffle } = await loadFixture(defaultFixture);
+			it("Returns true if all condition are met", async function () {
+				const { raffle } = await loadFixture(defaultFixture);
 
-		await raffle.enterRaffle({ value: entranceFee });
-		await increaseTime(+interval + 1);
-		const isUpkeepNeeded = (await raffle.checkUpkeep([]))[0];
+				await raffle.enterRaffle({ value: entranceFee });
+				await increaseTime(+interval + 1);
+				const isUpkeepNeeded = (await raffle.checkUpkeep([]))[0];
 
-		expect(isUpkeepNeeded).to.true;
-	});
-});
+				expect(isUpkeepNeeded).to.true;
+			});
+	  });
