@@ -28,7 +28,7 @@ const networkConfig: networkConfigType = {
 		entranceFee: ethers.utils.parseEther("0.01"),
 		callbackGasLimit: "500000",
 		vrfV2Coordinator: "0x2Ca8E0C643bDe4C2E08ab1fA0da3401AdAD7734D",
-		subId: "0",
+		subId: "771",
 	},
 
 	31337: {
