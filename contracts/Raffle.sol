@@ -125,14 +125,15 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 
 		if (!isUpkeepNeeded)
 			revert Raffle__UpkeepNotNeeded(
-				address(this).balance,
+				address(this).balance - s_fundsToWithdraw,
 				s_players.length,
 				uint256(s_raffleState)
 			);
 
 		s_raffleState = RaffleState.CALCULATING;
 
-		uint256 requestId = i_vrfCoordinator.requestRandomWords(
+		/* uint256 RequestId */
+		i_vrfCoordinator.requestRandomWords(
 			i_gasLane,
 			i_subId,
 			REQUEST_CONFIRMATIONS,
@@ -222,5 +223,9 @@ contract Raffle is VRFConsumerBaseV2, KeeperCompatibleInterface {
 
 	function getWinningFunds(address player) external view returns (uint256) {
 		return s_userWithdrawAmount[player];
+	}
+
+	function getTotalFundsToWithdraw() external view returns (uint256) {
+		return s_fundsToWithdraw;
 	}
 }

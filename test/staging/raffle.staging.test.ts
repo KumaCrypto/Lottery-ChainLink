@@ -3,6 +3,7 @@ import { network, ethers } from "hardhat";
 import { Raffle } from "../../typechain-types";
 import { expect } from "chai";
 import { SignerWithAddress } from "@nomiclabs/hardhat-ethers/signers";
+import { BigNumber } from "ethers";
 
 const currentChainId = network.config.chainId;
 DEV_CHAIN_ID === currentChainId
@@ -40,12 +41,18 @@ DEV_CHAIN_ID === currentChainId
 								expect(recentWinner).to.eq(userAddress);
 								expect(raffleState).to.eq(0);
 
-								await expect(
-									raffle.withdrawWinningFunds()
-								).to.changeEtherBalance(
-									[userAddress],
-									[+entranceFee]
-								);
+								const balanceBefore: BigNumber =
+									await user.getBalance();
+
+								const tx = await raffle.withdrawWinningFunds();
+								await tx.wait(1);
+
+								const balanceAfter: BigNumber =
+									await user.getBalance();
+
+								expect(
+									balanceBefore.add(entranceFee)
+								).to.closeTo(balanceAfter, 1e14);
 
 								expect(endingTimeStamp).gt(startingTimestamp);
 							} catch (error: any) {
