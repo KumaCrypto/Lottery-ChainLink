@@ -1,13 +1,36 @@
-# Sample Hardhat Project
+<p align="center"> <img src="./pictures/ChainlinkDice.jpeg" width="200" alt="Chainlink Dice"> </p>
+</br>
 
-This project demonstrates a basic Hardhat use case. It comes with a sample contract, a test for that contract, and a script that deploys that contract.
+# Lottery using Chainlink VRF V2(Verifiable Random Function)
 
-Try running some of the following tasks:
+<p>A simple lottery in the blockchain in which the winner is chosen with provable randomness using Chainlink VRF V2 and automation from Chainlink Keepers</p>
 
-```shell
-npx hardhat help
-npx hardhat test
-GAS_REPORT=true npx hardhat test
-npx hardhat node
-npx hardhat run scripts/deploy.ts
+# Getting Started
+
+## Requirements
+
+-   [git](https://git-scm.com/book/en/v2/Getting-Started-Installing-Git)
+
+    -   You'll know you did it right if you can run `git --version` and you see a response like `git version x.x.x`
+
+-   [Nodejs](https://nodejs.org/en/)
+    -   You'll know you've installed nodejs right if you can run:
+        -   `node --version` and get an ouput like: `vx.x.x`
+
+## Quickstart
+
+```bash
+git clone https://github.com/KumaCrypto/Raffle-fcc
+```
+
+---
+
+```bash
+cd Raffle-fcc
+```
+
+---
+
+```bash
+npm install --save-dev
 ```
