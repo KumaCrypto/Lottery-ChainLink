@@ -3,7 +3,7 @@
 
 # Lottery using Chainlink VRF V2(Verifiable Random Function)
 
-<p>A simple lottery in the blockchain in which the winner is chosen with provable randomness using Chainlink VRF V2 and automation from Chainlink Keepers</p>
+<p>A simple lottery in the blockchain in which the winner is chosen with provable randomness using Chainlink VRF V2 and automation from Chainlink Keepers.</p>
 
 # Getting Started
 
@@ -32,5 +32,25 @@ cd Raffle-fcc
 ---
 
 ```bash
-npm install --save-dev
+npm install -D
+```
+
+# Usage
+
+Deploy:
+
+```
+npx hardhat deploy
+```
+
+## Testing
+
+```
+npx hardhat test
+```
+
+### Test Coverage
+
+```
+npx hardhat coverage
 ```
